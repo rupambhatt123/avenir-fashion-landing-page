@@ -1,0 +1,392 @@
+{
+  "common": {
+    "siteName": "AVENIR",
+    "brandName": "AVENIR",
+    "socialLinks": {
+      "facebook": "https://facebook.com",
+      "instagram": "https://instagram.com",
+      "twitter": "https://twitter.com",
+      "pinterest": "https://pinterest.com"
+    }
+  },
+  "categories": {
+    "Fashion": {
+      "templateComponents": {
+        "template-1": {
+          "shared": {
+            "Header": "FashionHeader1",
+            "Footer": "FashionFooter1"
+          },
+          "pages": {
+            "home": {
+              "components": [
+                { "key": "HeroSection", "component": "FashionHero1" },
+                { "key": "About", "component": "FashionAbout1" },
+                { "key": "CollectionsGrid", "component": "FashionCollectionsGrid1" },
+                { "key": "GalleryPage", "component": "FashionGallery1" },
+                { "key": "TestimonialsPage", "component": "FashionTestimonialsPage1" },
+                { "key": "ContactPage", "component": "FashionContact1" },
+                { "key": "InstagramFeed", "component": "FashionInstagram1" }
+              ]
+            }
+          }
+        }
+      },
+      "sections": {
+        "Header": {
+          "variants": {
+            "FashionHeader1": {
+              "logo": "/logo.png",
+              "logoAlt": "Avenir Logo",
+              "navLinks": [
+                { "title": "Home", "path": "#home" },
+                { "title": "About Us", "path": "#about" },
+                { "title": "Collections", "path": "#collections" },
+                { "title": "Gallery", "path": "#gallery" },
+                { "title": "Testimonials", "path": "#testimonials" },
+                { "title": "Contact Us", "path": "#contact" }
+              ],
+              "ctaButton": {
+                "text": "Enquiry Now",
+                "path": "#enquiry"
+              }
+            }
+          }
+        },
+        "HeroSection": {
+          "variants": {
+            "FashionHero1": {
+              "seasonBadge": {
+                "year": "2024",
+                "label": "NEW SEASON"
+              },
+              "designBadge": {
+                "year": "2024",
+                "label": "NEW DESIGN"
+              },
+              "titleWord1": "STREET",
+              "titleWord2": "Style",
+              "subPillars": [
+                "EXPLORE",
+                "EXPRESS",
+                "ELEVATE"
+              ],
+              "description": "Discover our curated essentials crafted for everyday comfort and striking street-inspired elegance. Designed to fit seamlessly into modern lifestyle wardrobes.",
+              "ctaButton": {
+                "label": "EXPLORE COLLECTIONS",
+                "href": "#collections"
+              },
+              "mainImage": "/hero1.webp",
+              "categoryTiles": [
+                {
+                  "label": "FOR MEN",
+                  "src": "/main.webp",
+                  "href": "#collections"
+                },
+                {
+                  "label": "FOR WOMEN",
+                  "src": "/hero3.avif",
+                  "href": "#collections"
+                }
+              ]
+            }
+          }
+        },
+        "About": {
+          "variants": {
+            "FashionAbout1": {
+              "badge": "ABOUT US",
+              "title": "More Than Fashion,",
+              "titleHighlight": "A Lifestyle",
+              "description": "At Avenir, fashion is embraced as a natural canvas of individuality. Every piece is carefully balanced with modern aesthetics, premium materials, and timeless cut to accompany life's most meaningful moments.",
+              "image": "/d1.webp",
+              "imageAlt": "Avenir Lifestyle Expression"
+            }
+          }
+        },
+        "CollectionsGrid": {
+          "variants": {
+            "FashionCollectionsGrid1": {
+              "badge": "Collections",
+              "title": "Explore Our",
+              "titleHighlight": "Collections",
+              "description": "Discover a wide range of styles designed for every mood, occasion and personality. From everyday essentials to standout pieces, find your perfect look with Avenir.",
+              "tiles": [
+                { "slug": "couture", "label": "Haute Couture", "src": "/collection1.webp", "className": "lg:col-span-1 lg:row-span-2" },
+                { "slug": "urban", "label": "Urban Chic", "src": "/collection2.webp", "className": "lg:col-span-1" },
+                { "slug": "evening", "label": "Evening Gowns", "src": "/collection3.webp", "className": "lg:col-span-1 lg:row-span-2" },
+                { "slug": "minimal", "label": "Minimal Luxe", "src": "/collection4.webp", "className": "lg:col-span-1" },
+                { "slug": "resortwear", "label": "Resort & Cruise", "src": "/collection5.webp", "className": "lg:col-span-1" },
+                { "slug": "accessories", "label": "Luxury Accessories", "src": "/collection6.webp", "className": "lg:col-span-1" }
+              ],
+              "viewAllButton": {
+                "text": "Inquire For All Styles",
+                "href": "#enquiry"
+              }
+            }
+          }
+        },
+        "GalleryPage": {
+          "variants": {
+            "FashionGallery1": {
+              "badge": "OUR GALLERY",
+              "title": "Moments of Style & Elegance",
+              "description": "Explore our latest collection and fashion moments through our gallery.",
+              "itemsPerPage": 12,
+              "totalPages": 4,
+              "images": [
+                { "id": 1, "title": "Floral Wrap Dress", "image": "/collection1.webp" },
+                { "id": 2, "title": "Puff Sleeve Crop", "image": "/collection2.webp" },
+                { "id": 3, "title": "Ruffle Collar Top", "image": "/collection3.webp" },
+                { "id": 4, "title": "Crimson Party Dress", "image": "/collection4.webp" },
+                { "id": 5, "title": "Summer Porcelain Floral", "image": "/collection5.webp" },
+                { "id": 6, "title": "Denim Classic Trucker", "image": "/collection6.webp" },
+                { "id": 7, "title": "Artisanal Ethnic Kurta", "image": "/d1.webp" },
+                { "id": 8, "title": "Black Wrap Midi", "image": "/collection7.webp" },
+                { "id": 9, "title": "Beige Knit Sweater", "image": "/collection8.webp" },
+                { "id": 10, "title": "Lavender Smocked Dress", "image": "/floral.webp" },
+                { "id": 11, "title": "Emerald Satin Wrap", "image": "/ethnic.webp" },
+                { "id": 12, "title": "Powder Pink Blazer Suit", "image": "/d3.jpg" },
+                { "id": 14, "title": "Camel Trench Coat Look", "image": "/ruffle.jpg" },
+                { "id": 15, "title": "Lace Cotton Sun Dress", "image": "/testimonial.webp" },
+                { "id": 16, "title": "Denim Utility Dress", "image": "/collection6.webp" }
+              ]
+            }
+          }
+        },
+        "TestimonialsPage": {
+          "variants": {
+            "FashionTestimonialsPage1": {
+              "badge": "TESTIMONIALS",
+              "title": "What Our Readers Say",
+              "description": "Real stories from our readers who love our fashion insights, styling tips and lifestyle content.",
+              "items": [
+                {
+                  "id": 1,
+                  "rating": 5,
+                  "quote": "“I absolutely love the fashion tips and style guides! The content is so practical and easy to follow. It has really helped me build a more confident and stylish wardrobe.”",
+                  "name": "Priya Sharma",
+                  "location": "New Delhi, India"
+                },
+                {
+                  "id": 2,
+                  "rating": 5,
+                  "quote": "“The seasonal outfit ideas are always fresh and on-trend. I often get inspired by the blog to try new styles and experiment with my looks. Highly recommended to all fashion lovers!”",
+                  "name": "Ananya Mehta",
+                  "location": "Mumbai, India"
+                },
+                {
+                  "id": 3,
+                  "rating": 5,
+                  "quote": "“From casual everyday looks to special occasion outfits, this blog covers everything. The writing is clear, the ideas are creative, and the styling tips are really helpful.”",
+                  "name": "Ritika Kapoor",
+                  "location": "Bengaluru, India"
+                },
+                {
+                  "id": 4,
+                  "rating": 5,
+                  "quote": "“I love how the blog keeps me updated with the latest fashion trends. The outfit suggestions and color combinations are always on point and easy to recreate.”",
+                  "name": "Sneha Verma",
+                  "location": "Pune, India"
+                },
+                {
+                  "id": 5,
+                  "rating": 5,
+                  "quote": "“The lifestyle and fashion content is relatable and inspiring. I have discovered so many new brands and styling ideas through this blog. It’s now my go-to source for fashion inspiration.”",
+                  "name": "Kavya Nair",
+                  "location": "Chennai, India"
+                },
+                {
+                  "id": 6,
+                  "rating": 5,
+                  "quote": "“Beautifully written and well-researched content. I appreciate how the blog shares both trendy and timeless fashion ideas. It has truly helped me enhance my personal style!”",
+                  "name": "Neha Joshi",
+                  "location": "Hyderabad, India"
+                }
+              ]
+            }
+          }
+        },
+        "Testimonials": {
+          "variants": {
+            "FashionTestimonials1": {
+              "badge": "TESTIMONIALS",
+              "title": "What Our Readers Say",
+              "description": "Real stories from our readers who love our fashion insights, styling tips and lifestyle content.",
+              "reviews": [
+                {
+                  "id": 1,
+                  "rating": 5,
+                  "quote": "“I absolutely love the fashion tips and style guides! The content is so practical and easy to follow. It has really helped me build a more confident and stylish wardrobe.”",
+                  "name": "Priya Sharma",
+                  "location": "New Delhi, India"
+                },
+                {
+                  "id": 2,
+                  "rating": 5,
+                  "quote": "“The seasonal outfit ideas are always fresh and on-trend. I often get inspired by the blog to try new styles and experiment with my looks. Highly recommended to all fashion lovers!”",
+                  "name": "Ananya Mehta",
+                  "location": "Mumbai, India"
+                },
+                {
+                  "id": 3,
+                  "rating": 5,
+                  "quote": "“From casual everyday looks to special occasion outfits, this blog covers everything. The writing is clear, the ideas are creative, and the styling tips are really helpful.”",
+                  "name": "Ritika Kapoor",
+                  "location": "Bengaluru, India"
+                },
+                {
+                  "id": 4,
+                  "rating": 5,
+                  "quote": "“I love how the blog keeps me updated with the latest fashion trends. The outfit suggestions and color combinations are always on point and easy to recreate.”",
+                  "name": "Sneha Verma",
+                  "location": "Pune, India"
+                },
+                {
+                  "id": 5,
+                  "rating": 5,
+                  "quote": "“The lifestyle and fashion content is relatable and inspiring. I have discovered so many new brands and styling ideas through this blog. It’s now my go-to source for fashion inspiration.”",
+                  "name": "Kavya Nair",
+                  "location": "Chennai, India"
+                },
+                {
+                  "id": 6,
+                  "rating": 5,
+                  "quote": "“Beautifully written and well-researched content. I appreciate how the blog shares both trendy and timeless fashion ideas. It has truly helped me enhance my personal style!”",
+                  "name": "Neha Joshi",
+                  "location": "Hyderabad, India"
+                }
+              ]
+            }
+          }
+        },
+        "EnquiryPage": {
+          "variants": {
+            "FashionEnquiryPage1": {
+              "badge": "ENQUIRY NOW",
+              "title": "Enquiry",
+              "titleHighlight": "Now",
+              "description": "Interested in this product? Fill out the form below and our team will get back to you with product details, pricing and availability.",
+              "successMessage": "Thank you! Your enquiry has been submitted.",
+              "placeholders": {
+                "name": "Your Name *",
+                "email": "Email Address *",
+                "phone": "Phone Number *",
+                "size": "Preferred Size *",
+                "color": "Preferred Color *",
+                "subject": "Subject *",
+                "message": "Your Message *"
+              },
+              "sizeOptions": [
+                { "value": "XS", "label": "XS" },
+                { "value": "S", "label": "S" },
+                { "value": "M", "label": "M" },
+                { "value": "L", "label": "L" },
+                { "value": "XL", "label": "XL" },
+                { "value": "Custom", "label": "Custom Size" }
+              ],
+              "colorOptions": [
+                "Beige / Camel",
+                "Ivory / Off-White",
+                "Olive Green",
+                "Burgundy",
+                "Classic Black"
+              ],
+              "submitButtonText": "SEND ENQUIRY",
+              "stampText": "Fashion for Every Fashion",
+              "editorialImage": {
+                "src": "/d3.jpg",
+                "alt": "Avenir Couture Ensemble"
+              },
+              "floatingCard": {
+                "badge": "LET'S CREATE",
+                "title": "Something Beautiful Together",
+                "description": "Share your requirements and our team will help you with this product."
+              }
+            }
+          }
+        },
+        "ContactPage": {
+          "variants": {
+            "FashionContact1": {
+              "form": {
+                "badge": "GET IN TOUCH",
+                "title": "Contact Our Concierge",
+                "description": "Have questions or need assistance? Reach out to us and we'll be glad to help.",
+                "namePlaceholder": "Your Name *",
+                "emailPlaceholder": "Your Email *",
+                "subjectPlaceholder": "Subject *",
+                "messagePlaceholder": "Your Message *",
+                "buttonText": "SUBMIT MESSAGE",
+                "successMessage": "Your message has been received! We will be in touch shortly."
+              },
+              "info": {
+                "badge": "FIND US",
+                "title": "Visit Our Flagship Store",
+                "description": "Step into our boutique to experience textures, trial fits, and bespoke consultations in person.",
+                "address": {
+                  "label": "Boutique Location",
+                  "line1": "123 Fashion Avenue,",
+                  "line2": "New York, NY 10001, USA"
+                },
+                "phone": {
+                  "label": "Direct Call",
+                  "display": "+1 000 000 000",
+                  "href": "tel:+1000000000"
+                },
+                "email": {
+                  "label": "Email Concierge",
+                  "display": "info@xyz.com",
+                  "href": "mailto:info@avenir.com"
+                },
+                "follow": {
+                  "title": "Connect With Us",
+                  "description": "Follow our social profiles for runway live-streams and seasonal lookbooks."
+                }
+              },
+              "map": {
+                "title": "Avenir Flagship Location",
+                "src": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.119763973046!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sin!4v1714500000000!5m2!1sen!2sin"
+              }
+            }
+          }
+        },
+        "InstagramFeed": {
+          "variants": {
+            "FashionInstagram1": {
+              "url": "https://www.instagram.com/",
+              "speedSeconds": 45,
+              "photos": [
+                "/collection1.webp",
+                "/collection8.webp",
+                "/collection5.webp",
+                "/collection4.webp",
+                "/collection3.webp",
+                "/floral.webp",
+                "/mission.jpeg",
+                "/collection2.webp"
+              ]
+            }
+          }
+        },
+        "Footer": {
+          "variants": {
+            "FashionFooter1": {
+              "logo": "/logo.png",
+              "about": "Avenir brings modern luxury for every lifestyle. Explore timeless styles designed to make you look and feel confident every day.",
+              "address": "123 Fashion Avenue, New York, NY 10001",
+              "phone": "+1 000 000 000",
+              "email": "info@xyz.com",
+              "quickLinksTitle": "Quick Links",
+              "contactBadge": {
+                "text": "Contact Us",
+                "href": "#contact"
+              },
+              "copyright": "© 2026 AVENIR. All Rights Reserved.Powered By Lestow."
+            }
+          }
+        }
+      }
+    }
+  }
+}
