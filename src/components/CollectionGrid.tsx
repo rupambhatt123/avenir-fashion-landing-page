@@ -47,6 +47,19 @@ export default function CollectionGrid() {
     setMobileIndex((prev) => (prev === tiles.length - 1 ? 0 : prev + 1));
   };
 
+  const handleScrollToEnquiry = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', '#enquiry');
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    }
+    const enquiryEl = document.getElementById('enquiry');
+    if (enquiryEl) {
+      const top = enquiryEl.getBoundingClientRect().top + window.scrollY - 92;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+  };
+
   // Autoplay (3.5 seconds)
   useEffect(() => {
     if (tiles.length <= 1 || isPaused) return;
@@ -119,6 +132,7 @@ export default function CollectionGrid() {
               >
                 <Link
                   href="#enquiry"
+                  onClick={handleScrollToEnquiry}
                   className="group relative block h-full w-full overflow-hidden bg-[#E6DED3]"
                 >
                   <Image
@@ -203,6 +217,7 @@ export default function CollectionGrid() {
           >
             <Link
               href="#enquiry"
+              onClick={handleScrollToEnquiry}
               className="group absolute inset-0 block overflow-hidden bg-[#E6DED3]"
             >
               <Image
@@ -231,6 +246,7 @@ export default function CollectionGrid() {
         <div className="mt-10 sm:mt-12 flex justify-center px-4 sm:px-6">
           <Link
             href="#enquiry"
+            onClick={handleScrollToEnquiry}
             className="w-full sm:w-auto text-center inline-flex items-center justify-center gap-3 rounded-sm bg-[#B7834F] px-8 py-3.5 text-xs sm:text-sm font-semibold uppercase tracking-wider text-white shadow-sm transition-colors hover:bg-[#8F6030]"
           >
             <span>{collectionsData.viewAllButton.text}</span>

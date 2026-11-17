@@ -65,9 +65,9 @@ export default function EnquirySection() {
   };
 
   return (
-    <div
+    <section
       id="enquiry"
-      className={`${inter.className} relative isolate overflow-x-hidden bg-[#FAF8F5] text-[#1A1A1A] py-16 sm:py-20 lg:py-24`}
+      className={`${inter.className} relative isolate scroll-mt-24 overflow-x-hidden bg-[#FAF8F5] text-[#1A1A1A] py-16 sm:py-20 lg:py-24`}
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_20%,#FBF1E6_0%,#FAF8F5_50%,#F6F0E7_100%)]" />
@@ -405,6 +405,6 @@ export default function EnquirySection() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </section>
   );
 }

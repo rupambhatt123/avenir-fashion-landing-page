@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,19 +12,46 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 function NavbarContent() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('#home');
+  const isManualScrollRef = useRef(false);
+  const scrollLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const headerData =
     websiteData.categories.Fashion.sections.Header.variants.FashionHeader1;
 
-  // Path mapping for smooth landing page scroll
-  const getSectionHash = (path: string) => {
+  const getSectionHash = useCallback((path: string) => {
     if (path === '/' || path === '#home') return '#home';
     const clean = path.replace('/', '').replace('#', '');
     return `#${clean}`;
-  };
+  }, []);
 
-  const handleNavClick = (hash: string) => {
-    setActiveSection(hash);
+  const ctaHash = getSectionHash(headerData.ctaButton.path);
+
+  const normalizeActiveHash = useCallback(
+    (hash: string) => {
+      if (hash === '#enquiry' || hash === '#contact') {
+        const hasNav = headerData.navLinks.some(
+          (item: { path: string }) => getSectionHash(item.path) === hash
+        );
+        if (!hasNav) {
+          return ctaHash;
+        }
+      }
+      return hash;
+    },
+    [headerData.navLinks, getSectionHash, ctaHash]
+  );
+
+  const lockScrollSpyTemporarily = useCallback((duration = 1100) => {
+    isManualScrollRef.current = true;
+    if (scrollLockTimerRef.current) {
+      clearTimeout(scrollLockTimerRef.current);
+    }
+    scrollLockTimerRef.current = setTimeout(() => {
+      isManualScrollRef.current = false;
+    }, duration);
+  }, []);
+
+  const scrollToTarget = useCallback((hash: string) => {
     if (hash === '#home') {
       const homeEl = document.getElementById('home');
       if (homeEl) {
@@ -32,54 +59,148 @@ function NavbarContent() {
       } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+      return;
+    }
+
+    const targetId = hash.replace('#', '');
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+      const headerOffset = 92;
+      const top =
+        targetEl.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    hash: string,
+    closeMobileMenu = false
+  ) => {
+    e.preventDefault();
+    const normalized = normalizeActiveHash(hash);
+    setActiveSection(normalized);
+    lockScrollSpyTemporarily(1200);
+
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', hash);
+    }
+
+    if (closeMobileMenu) {
+      setIsOpen(false);
+      setTimeout(() => {
+        scrollToTarget(hash);
+      }, 150);
+    } else {
+      scrollToTarget(hash);
     }
   };
 
-  // Scroll spy: smooth update jab neeche se upar hero section par aayein
-  useEffect(() => {
-    const handleScroll = () => {
-      // Agar user top/hero section ke paas hai toh guaranteed #home active rahega
-      if (window.scrollY < 120) {
-        setActiveSection('#home');
+  const updateActiveSection = useCallback(() => {
+    if (isManualScrollRef.current) return;
+
+    const currentScrollY =
+      window.scrollY ||
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      0;
+
+    if (currentScrollY < 90) {
+      if (window.location.hash && window.location.hash !== '#home') {
         return;
       }
-
-      const scrollPosition = window.scrollY + 180;
-      const sections = headerData.navLinks.map((item) =>
-        getSectionHash(item.path).substring(1)
-      );
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const sectionId = sections[i];
-        if (!sectionId || sectionId === 'home') continue;
-
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop;
-          if (scrollPosition >= top) {
-            setActiveSection(`#${sectionId}`);
-            return;
-          }
-        }
-      }
-
       setActiveSection('#home');
+      return;
+    }
+
+    const allHashes = [
+      ...headerData.navLinks.map((item: { path: string }) =>
+        getSectionHash(item.path)
+      ),
+      ctaHash,
+      '#enquiry',
+      '#contact',
+    ];
+    const uniqueIds = Array.from(
+      new Set(allHashes.map((h) => h.substring(1)).filter(Boolean))
+    );
+
+    const isAtBottom =
+      window.innerHeight + currentScrollY >=
+      document.documentElement.scrollHeight - 40;
+    if (isAtBottom) {
+      setActiveSection(normalizeActiveHash('#contact'));
+      return;
+    }
+
+    const triggerLine = currentScrollY + Math.min(200, window.innerHeight * 0.35);
+    let current = '#home';
+
+    const sectionsWithTop: { id: string; top: number }[] = [];
+    for (const sectionId of uniqueIds) {
+      if (sectionId === 'home') continue;
+      const el = document.getElementById(sectionId);
+      if (el) {
+        sectionsWithTop.push({
+          id: sectionId,
+          top: el.getBoundingClientRect().top + currentScrollY,
+        });
+      }
+    }
+
+    sectionsWithTop.sort((a, b) => a.top - b.top);
+
+    for (const sec of sectionsWithTop) {
+      if (triggerLine >= sec.top) {
+        current = `#${sec.id}`;
+      }
+    }
+
+    setActiveSection(normalizeActiveHash(current));
+  }, [headerData.navLinks, ctaHash, getSectionHash, normalizeActiveHash]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const initialHash = window.location.hash;
+      setActiveSection(normalizeActiveHash(initialHash));
+      lockScrollSpyTemporarily(1100);
+      setTimeout(() => {
+        scrollToTarget(initialHash);
+      }, 100);
+    } else {
+      updateActiveSection();
+    }
+
+    const handleHashChange = () => {
+      if (window.location.hash) {
+        setActiveSection(normalizeActiveHash(window.location.hash));
+        lockScrollSpyTemporarily(1100);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [headerData.navLinks]);
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection, { passive: true });
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('resize', updateActiveSection);
+      window.removeEventListener('hashchange', handleHashChange);
+      if (scrollLockTimerRef.current) {
+        clearTimeout(scrollLockTimerRef.current);
+      }
+    };
+  }, [updateActiveSection, normalizeActiveHash, lockScrollSpyTemporarily, scrollToTarget]);
+
+  const isCtaActive = activeSection === ctaHash;
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#E7E2D8] bg-[#F6F3ED]/95 backdrop-blur-md transition-all">
       <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        
-        {/* Brand Logo */}
         <Link
           className="group flex items-center py-2"
           href="#home"
-          onClick={() => handleNavClick('#home')}
+          onClick={(e) => handleNavClick(e, '#home')}
         >
           <motion.div
             whileHover={{ scale: 1.03 }}
@@ -96,7 +217,6 @@ function NavbarContent() {
           </motion.div>
         </Link>
 
-        {/* Desktop Links with Active State & Color Change */}
         <nav className="hidden items-center space-x-7 lg:flex xl:space-x-9">
           {headerData.navLinks.map((item: { title: string; path: string }) => {
             const hash = getSectionHash(item.path);
@@ -106,7 +226,7 @@ function NavbarContent() {
               <Link
                 key={item.title}
                 href={hash}
-                onClick={() => handleNavClick(hash)}
+                onClick={(e) => handleNavClick(e, hash)}
                 className={`relative py-1.5 text-[15px] font-medium tracking-wide transition-all duration-300 xl:text-[16px] ${
                   isActive
                     ? 'font-semibold text-[#9E6E3E]'
@@ -114,7 +234,6 @@ function NavbarContent() {
                 }`}
               >
                 <span>{item.title}</span>
-                {/* Active indicator bar */}
                 {isActive && (
                   <motion.span
                     layoutId="navbarActiveIndicator"
@@ -127,13 +246,16 @@ function NavbarContent() {
           })}
         </nav>
 
-        {/* Desktop CTA Button */}
         <div className="hidden lg:block">
           <motion.div whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}>
             <Link
-              href={getSectionHash(headerData.ctaButton.path)}
-              onClick={() => handleNavClick(getSectionHash(headerData.ctaButton.path))}
-              className="group inline-flex items-center gap-2.5 rounded-sm bg-[#9E6E3E] px-6 py-2.5 text-[14px] font-semibold tracking-wider text-white shadow-sm transition-colors duration-300 hover:bg-[#885A2B] xl:text-[15px]"
+              href={ctaHash}
+              onClick={(e) => handleNavClick(e, ctaHash)}
+              className={`group inline-flex items-center gap-2.5 rounded-sm px-6 py-2.5 text-[14px] font-semibold tracking-wider text-white shadow-sm transition-colors duration-300 xl:text-[15px] ${
+                isCtaActive
+                  ? 'bg-[#7D5126] ring-2 ring-[#9E6E3E]/40 ring-offset-2 ring-offset-[#F6F3ED]'
+                  : 'bg-[#9E6E3E] hover:bg-[#885A2B]'
+              }`}
             >
               <span>{headerData.ctaButton.text}</span>
               <ArrowRight
@@ -144,7 +266,6 @@ function NavbarContent() {
           </motion.div>
         </div>
 
-        {/* Mobile Hamburger Toggle Button */}
         <motion.button
           whileTap={{ scale: 0.9 }}
           type="button"
@@ -157,7 +278,6 @@ function NavbarContent() {
         </motion.button>
       </div>
 
-      {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -181,10 +301,7 @@ function NavbarContent() {
                   >
                     <Link
                       href={hash}
-                      onClick={() => {
-                        handleNavClick(hash);
-                        setIsOpen(false);
-                      }}
+                      onClick={(e) => handleNavClick(e, hash, true)}
                       className={`flex items-center justify-between rounded-sm px-3.5 py-2.5 text-base font-medium transition-colors ${
                         isActive
                           ? 'bg-[#EAE2D5] font-semibold text-[#9E6E3E]'
@@ -207,12 +324,13 @@ function NavbarContent() {
                 className="pt-2"
               >
                 <Link
-                  href={getSectionHash(headerData.ctaButton.path)}
-                  onClick={() => {
-                    handleNavClick(getSectionHash(headerData.ctaButton.path));
-                    setIsOpen(false);
-                  }}
-                  className="flex w-full items-center justify-center gap-2 rounded-sm bg-[#9E6E3E] py-3 text-base font-semibold tracking-wider text-white shadow-sm transition-colors hover:bg-[#885A2B]"
+                  href={ctaHash}
+                  onClick={(e) => handleNavClick(e, ctaHash, true)}
+                  className={`flex w-full items-center justify-center gap-2 rounded-sm py-3 text-base font-semibold tracking-wider text-white shadow-sm transition-colors ${
+                    isCtaActive
+                      ? 'bg-[#7D5126] ring-2 ring-[#9E6E3E]/40 ring-offset-2 ring-offset-[#F6F3ED]'
+                      : 'bg-[#9E6E3E] hover:bg-[#885A2B]'
+                  }`}
                 >
                   <span>{headerData.ctaButton.text}</span>
                   <ArrowRight size={17} />
