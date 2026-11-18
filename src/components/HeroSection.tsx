@@ -71,6 +71,7 @@ export default function HeroSection() {
 
   return (
     <section
+      id="home"
       className={`${montserrat.className} relative isolate overflow-hidden bg-[#FAF6F0] text-[#1A1A1A]`}
     >
       {/* Background Graphic Elements */}

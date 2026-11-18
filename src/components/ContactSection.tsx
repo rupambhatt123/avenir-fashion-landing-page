@@ -150,7 +150,7 @@ export default function ContactSection() {
     'flex h-11 w-11 sm:h-12 sm:w-12 lg:h-13 lg:w-13 shrink-0 items-center justify-center rounded-full bg-[#F6EBDE] text-[#141414] transition-colors duration-500';
 
   return (
-    <div id="contact" className={`${inter.className} relative isolate overflow-x-clip bg-[#FFFDFB] text-[#1A1A1A] pt-14`}>
+    <div id="contact" className={`${inter.className} relative isolate scroll-mt-24 overflow-x-clip bg-[#FFFDFB] text-[#1A1A1A] pt-14`}>
       <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.25fr_1fr] lg:gap-12">
           {/* Form */}

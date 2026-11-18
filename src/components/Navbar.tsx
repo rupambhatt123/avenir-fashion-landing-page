@@ -1,19 +1,26 @@
 'use client';
 
 import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
-import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import websiteData from '@/data/websiteData.json';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+const STORAGE_SECTION_KEY = 'avenir_last_active_section';
 
 function NavbarContent() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('#home');
+
   const isManualScrollRef = useRef(false);
+  const isUserScrollingRef = useRef(false);
   const scrollLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const headerData =
     websiteData.categories.Fashion.sections.Header.variants.FashionHeader1;
@@ -28,6 +35,7 @@ function NavbarContent() {
 
   const normalizeActiveHash = useCallback(
     (hash: string) => {
+      if (!hash) return '#home';
       if (hash === '#enquiry' || hash === '#contact') {
         const hasNav = headerData.navLinks.some(
           (item: { path: string }) => getSectionHash(item.path) === hash
@@ -41,7 +49,20 @@ function NavbarContent() {
     [headerData.navLinks, getSectionHash, ctaHash]
   );
 
-  const lockScrollSpyTemporarily = useCallback((duration = 1100) => {
+  const setAndSaveActiveSection = useCallback(
+    (hash: string, persist = true) => {
+      const normalized = normalizeActiveHash(hash);
+      setActiveSection(normalized);
+      if (persist) {
+        try {
+          sessionStorage.setItem(STORAGE_SECTION_KEY, normalized);
+        } catch {}
+      }
+    },
+    [normalizeActiveHash]
+  );
+
+  const lockScrollSpyTemporarily = useCallback((duration = 1200) => {
     isManualScrollRef.current = true;
     if (scrollLockTimerRef.current) {
       clearTimeout(scrollLockTimerRef.current);
@@ -51,66 +72,22 @@ function NavbarContent() {
     }, duration);
   }, []);
 
-  const scrollToTarget = useCallback((hash: string) => {
-    if (hash === '#home') {
-      const homeEl = document.getElementById('home');
-      if (homeEl) {
-        homeEl.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      return;
-    }
-
-    const targetId = hash.replace('#', '');
-    const targetEl = document.getElementById(targetId);
-    if (targetEl) {
-      const headerOffset = 92;
-      const top =
-        targetEl.getBoundingClientRect().top + window.scrollY - headerOffset;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-    }
-  }, []);
-
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    hash: string,
-    closeMobileMenu = false
-  ) => {
-    e.preventDefault();
-    const normalized = normalizeActiveHash(hash);
-    setActiveSection(normalized);
-    lockScrollSpyTemporarily(1200);
-
-    if (typeof window !== 'undefined') {
-      window.history.replaceState(null, '', hash);
-    }
-
-    if (closeMobileMenu) {
-      setIsOpen(false);
-      setTimeout(() => {
-        scrollToTarget(hash);
-      }, 150);
-    } else {
-      scrollToTarget(hash);
-    }
-  };
-
-  const updateActiveSection = useCallback(() => {
-    if (isManualScrollRef.current) return;
-
-    const currentScrollY =
+  const getVisibleSectionFromViewport = useCallback(() => {
+    const scrollY =
       window.scrollY ||
       window.pageYOffset ||
       document.documentElement.scrollTop ||
       0;
 
-    if (currentScrollY < 90) {
-      if (window.location.hash && window.location.hash !== '#home') {
-        return;
-      }
-      setActiveSection('#home');
-      return;
+    if (scrollY < 45) {
+      return '#home';
+    }
+
+    const isAtBottom =
+      window.innerHeight + scrollY >=
+      document.documentElement.scrollHeight - 25;
+    if (isAtBottom) {
+      return normalizeActiveHash('#contact');
     }
 
     const allHashes = [
@@ -125,79 +102,182 @@ function NavbarContent() {
       new Set(allHashes.map((h) => h.substring(1)).filter(Boolean))
     );
 
-    const isAtBottom =
-      window.innerHeight + currentScrollY >=
-      document.documentElement.scrollHeight - 40;
-    if (isAtBottom) {
-      setActiveSection(normalizeActiveHash('#contact'));
+    const headerHeight = 96;
+    const viewportTop = headerHeight;
+    const viewportBottom = window.innerHeight;
+
+    let bestSection = '#home';
+    let maxVisiblePixels = 0;
+
+    for (const id of uniqueIds) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+
+      const rect = el.getBoundingClientRect();
+      const visibleTop = Math.max(rect.top, viewportTop);
+      const visibleBottom = Math.min(rect.bottom, viewportBottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+
+      if (visibleHeight > maxVisiblePixels) {
+        maxVisiblePixels = visibleHeight;
+        bestSection = `#${id}`;
+      }
+    }
+
+    return normalizeActiveHash(bestSection);
+  }, [headerData.navLinks, ctaHash, getSectionHash, normalizeActiveHash]);
+
+  const scrollToTarget = useCallback((hash: string, smooth = true) => {
+    const behavior: ScrollBehavior = smooth ? 'smooth' : 'auto';
+    if (hash === '#home') {
+      window.scrollTo({ top: 0, behavior });
       return;
     }
 
-    const triggerLine = currentScrollY + Math.min(200, window.innerHeight * 0.35);
-    let current = '#home';
+    const targetId = hash.replace('#', '');
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) {
+      const headerHeight = 96;
+      const top =
+        targetEl.getBoundingClientRect().top + window.scrollY - headerHeight;
+      window.scrollTo({ top: Math.max(0, top), behavior });
+    }
+  }, []);
 
-    const sectionsWithTop: { id: string; top: number }[] = [];
-    for (const sectionId of uniqueIds) {
-      if (sectionId === 'home') continue;
-      const el = document.getElementById(sectionId);
-      if (el) {
-        sectionsWithTop.push({
-          id: sectionId,
-          top: el.getBoundingClientRect().top + currentScrollY,
-        });
-      }
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    hash: string,
+    closeMobileMenu = false
+  ) => {
+    e.preventDefault();
+    setAndSaveActiveSection(hash, true);
+    lockScrollSpyTemporarily(1200);
+
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(window.history.state, '', hash);
     }
 
-    sectionsWithTop.sort((a, b) => a.top - b.top);
-
-    for (const sec of sectionsWithTop) {
-      if (triggerLine >= sec.top) {
-        current = `#${sec.id}`;
-      }
-    }
-
-    setActiveSection(normalizeActiveHash(current));
-  }, [headerData.navLinks, ctaHash, getSectionHash, normalizeActiveHash]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash) {
-      const initialHash = window.location.hash;
-      setActiveSection(normalizeActiveHash(initialHash));
-      lockScrollSpyTemporarily(1100);
+    if (closeMobileMenu) {
+      setIsOpen(false);
       setTimeout(() => {
-        scrollToTarget(initialHash);
-      }, 100);
+        scrollToTarget(hash, true);
+      }, 200);
     } else {
-      updateActiveSection();
+      scrollToTarget(hash, true);
     }
+  };
 
-    const handleHashChange = () => {
-      if (window.location.hash) {
-        setActiveSection(normalizeActiveHash(window.location.hash));
-        lockScrollSpyTemporarily(1100);
+  // User ke real touch/wheel scroll ko track karein taaki router ka scrollTo(0,0) sessionStorage na bigaade
+  useEffect(() => {
+    const markUserInteraction = () => {
+      isUserScrollingRef.current = true;
+      if (userScrollTimerRef.current) {
+        clearTimeout(userScrollTimerRef.current);
       }
+      userScrollTimerRef.current = setTimeout(() => {
+        isUserScrollingRef.current = false;
+      }, 800);
     };
 
-    window.addEventListener('scroll', updateActiveSection, { passive: true });
-    window.addEventListener('resize', updateActiveSection, { passive: true });
-    window.addEventListener('hashchange', handleHashChange);
+    const handleScroll = () => {
+      if (isManualScrollRef.current) return;
+      // Sirf tab update/save karein jab user khud scroll kar raha ho
+      if (!isUserScrollingRef.current) return;
+
+      const current = getVisibleSectionFromViewport();
+      setAndSaveActiveSection(current, true);
+    };
+
+    window.addEventListener('wheel', markUserInteraction, { passive: true });
+    window.addEventListener('touchmove', markUserInteraction, { passive: true });
+    window.addEventListener('keydown', markUserInteraction, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', updateActiveSection);
-      window.removeEventListener('resize', updateActiveSection);
-      window.removeEventListener('hashchange', handleHashChange);
-      if (scrollLockTimerRef.current) {
-        clearTimeout(scrollLockTimerRef.current);
-      }
+      window.removeEventListener('wheel', markUserInteraction);
+      window.removeEventListener('touchmove', markUserInteraction);
+      window.removeEventListener('keydown', markUserInteraction);
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollLockTimerRef.current) clearTimeout(scrollLockTimerRef.current);
+      if (userScrollTimerRef.current) clearTimeout(userScrollTimerRef.current);
     };
-  }, [updateActiveSection, normalizeActiveHash, lockScrollSpyTemporarily, scrollToTarget]);
+  }, [getVisibleSectionFromViewport, setAndSaveActiveSection]);
+
+  // Route change / Back button (popstate / pageshow) par saved section ko wapas lock & scroll karein
+  useEffect(() => {
+    const restoreSection = () => {
+      let targetHash = '';
+      if (window.location.hash && window.location.hash !== '#home') {
+        targetHash = window.location.hash;
+      } else {
+        try {
+          const saved = sessionStorage.getItem(STORAGE_SECTION_KEY);
+          if (saved && saved !== '#home') {
+            targetHash = saved;
+          }
+        } catch {}
+      }
+
+      if (targetHash) {
+        isUserScrollingRef.current = false;
+        lockScrollSpyTemporarily(1300);
+        setAndSaveActiveSection(targetHash, true);
+        if (window.location.hash !== targetHash) {
+          window.history.replaceState(window.history.state, '', targetHash);
+        }
+        scrollToTarget(targetHash, false);
+        return;
+      }
+
+      const current = getVisibleSectionFromViewport();
+      setAndSaveActiveSection(current, false);
+    };
+
+    restoreSection();
+    const t1 = setTimeout(restoreSection, 100);
+    const t2 = setTimeout(restoreSection, 300);
+    const t3 = setTimeout(restoreSection, 600);
+
+    window.addEventListener('popstate', restoreSection);
+    window.addEventListener('pageshow', restoreSection);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      window.removeEventListener('popstate', restoreSection);
+      window.removeEventListener('pageshow', restoreSection);
+    };
+  }, [
+    pathname,
+    searchParams,
+    getVisibleSectionFromViewport,
+    setAndSaveActiveSection,
+    lockScrollSpyTemporarily,
+    scrollToTarget,
+  ]);
+
+  const handleToggleMobileMenu = () => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        isManualScrollRef.current = false;
+        const current = getVisibleSectionFromViewport();
+        // Agar viewport me valid section dikh raha hai toh wahi set karein, warna saved section rakhein
+        if (current !== '#home' || window.scrollY < 45) {
+          setAndSaveActiveSection(current, true);
+        }
+      }
+      return next;
+    });
+  };
 
   const isCtaActive = activeSection === ctaHash;
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#E7E2D8] bg-[#F6F3ED]/95 backdrop-blur-md transition-all">
       <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
+        <a
           className="group flex items-center py-2"
           href="#home"
           onClick={(e) => handleNavClick(e, '#home')}
@@ -215,7 +295,7 @@ function NavbarContent() {
               className="object-contain object-left"
             />
           </motion.div>
-        </Link>
+        </a>
 
         <nav className="hidden items-center space-x-7 lg:flex xl:space-x-9">
           {headerData.navLinks.map((item: { title: string; path: string }) => {
@@ -223,7 +303,7 @@ function NavbarContent() {
             const isActive = activeSection === hash;
 
             return (
-              <Link
+              <a
                 key={item.title}
                 href={hash}
                 onClick={(e) => handleNavClick(e, hash)}
@@ -241,14 +321,14 @@ function NavbarContent() {
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
-              </Link>
+              </a>
             );
           })}
         </nav>
 
         <div className="hidden lg:block">
           <motion.div whileHover={{ scale: 1.03, y: -1 }} whileTap={{ scale: 0.97 }}>
-            <Link
+            <a
               href={ctaHash}
               onClick={(e) => handleNavClick(e, ctaHash)}
               className={`group inline-flex items-center gap-2.5 rounded-sm px-6 py-2.5 text-[14px] font-semibold tracking-wider text-white shadow-sm transition-colors duration-300 xl:text-[15px] ${
@@ -262,14 +342,14 @@ function NavbarContent() {
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-1"
               />
-            </Link>
+            </a>
           </motion.div>
         </div>
 
         <motion.button
           whileTap={{ scale: 0.9 }}
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={handleToggleMobileMenu}
           className="rounded-md p-2 text-[#1A1A1A] transition-colors hover:bg-[#EFE8DC] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9E6E3E]/40 lg:hidden"
           aria-label={isOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isOpen}
@@ -299,7 +379,7 @@ function NavbarContent() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.04, duration: 0.3, ease: EASE }}
                   >
-                    <Link
+                    <a
                       href={hash}
                       onClick={(e) => handleNavClick(e, hash, true)}
                       className={`flex items-center justify-between rounded-sm px-3.5 py-2.5 text-base font-medium transition-colors ${
@@ -312,7 +392,7 @@ function NavbarContent() {
                       {isActive && (
                         <span className="h-1.5 w-1.5 rounded-full bg-[#9E6E3E]" />
                       )}
-                    </Link>
+                    </a>
                   </motion.div>
                 );
               })}
@@ -323,7 +403,7 @@ function NavbarContent() {
                 transition={{ delay: 0.28, duration: 0.3, ease: EASE }}
                 className="pt-2"
               >
-                <Link
+                <a
                   href={ctaHash}
                   onClick={(e) => handleNavClick(e, ctaHash, true)}
                   className={`flex w-full items-center justify-center gap-2 rounded-sm py-3 text-base font-semibold tracking-wider text-white shadow-sm transition-colors ${
@@ -334,7 +414,7 @@ function NavbarContent() {
                 >
                   <span>{headerData.ctaButton.text}</span>
                   <ArrowRight size={17} />
-                </Link>
+                </a>
               </motion.div>
             </div>
           </motion.div>

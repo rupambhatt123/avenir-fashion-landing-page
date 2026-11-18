@@ -34,7 +34,7 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      className={`${inter.className} relative isolate overflow-hidden bg-[#FAF6F0] py-20 lg:py-28`}
+      className={`${inter.className} relative isolate scroll-mt-24 overflow-hidden bg-[#FAF6F0] py-20 lg:py-28`}
     >
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10 lg:px-14">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">

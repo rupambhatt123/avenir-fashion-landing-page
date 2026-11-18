@@ -67,7 +67,7 @@ export default function TestimonialsSection() {
   return (
     <section
       id="testimonials"
-      className={`${inter.className} relative isolate overflow-hidden bg-[#FAF8F5] py-16 sm:py-20 lg:py-24 border-b border-[#E7E2D8]`}
+      className={`${inter.className} relative isolate scroll-mt-24 overflow-hidden bg-[#FAF8F5] py-16 sm:py-20 lg:py-24 border-b border-[#E7E2D8]`}
     >
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-2xl text-center mb-12 sm:mb-16">
